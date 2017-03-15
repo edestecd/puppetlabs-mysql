@@ -21,7 +21,10 @@ class mysql::backup::mysqldump (
   $execpath           = '/usr/bin:/usr/sbin:/bin:/sbin',
 ) {
 
-  ensure_packages(['bzip2'])
+  if $backupcompress {
+    ensure_packages(['bzip2'])
+    Package['bzip2'] -> File['mysqlbackup.sh']
+  }
 
   mysql_user { "${backupuser}@localhost":
     ensure        => $ensure,
@@ -49,7 +52,7 @@ class mysql::backup::mysqldump (
     user    => 'root',
     hour    => $time[0],
     minute  => $time[1],
-    require => [File['mysqlbackup.sh'], Package['bzip2']],
+    require => File['mysqlbackup.sh'],
   }
 
   file { 'mysqlbackup.sh':
